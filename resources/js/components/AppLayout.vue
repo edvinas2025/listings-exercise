@@ -23,6 +23,12 @@ defineProps({
                 >
                     Saved searches
                 </Link>
+                <Link
+                    href="/alerts"
+                    class="text-sm font-medium text-slate-500 hover:text-slate-900"
+                >
+                    Alerts
+                </Link>
             </nav>
             <h1 class="mt-2 text-3xl font-bold tracking-tight">{{ heading }}</h1>
             <p v-if="subheading" class="mt-1 text-slate-500">{{ subheading }}</p>
