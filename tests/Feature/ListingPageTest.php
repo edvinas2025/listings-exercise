@@ -84,11 +84,13 @@ class ListingPageTest extends TestCase
 
     public function test_index_passes_current_filters_back_to_the_page(): void
     {
-        $this->get('/?max_price=300000&min_bedrooms=2')
+        $this->get('/?max_price=300000&min_bedrooms=2&property_type=flat&region=Manchester')
             ->assertOk()
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->where('filters.max_price', '300000')
                 ->where('filters.min_bedrooms', '2')
+                ->where('filters.property_type', 'flat')
+                ->where('filters.region', 'Manchester')
             );
     }
 
@@ -125,15 +127,38 @@ class ListingPageTest extends TestCase
 
     public function test_show_renders_a_single_listing(): void
     {
-        $listing = Listing::factory()->live()->create();
+        $this->freezeSecond();
+        $branch = Branch::factory()->create(['name' => 'Central', 'region' => 'North West']);
+        $listing = Listing::factory()->live()->for($branch)->create([
+            'reference' => 'STR-TEST01', 'address_line_1' => '12 King Street',
+            'city' => 'Manchester', 'postcode' => 'M1 1AA',
+            'price' => 255000, 'bedrooms' => 2, 'bathrooms' => 1,
+            'property_type' => 'semi_detached', 'listed_at' => now()->subDay(),
+        ]);
 
         $this->get("/listings/{$listing->id}")
             ->assertOk()
             ->assertInertia(fn (AssertableInertia $page) => $page
                 ->component('Listings/Show')
-                ->where('listing.id', $listing->id)
-                ->where('listing.reference', $listing->reference)
+                ->where('listing', [
+                    'id' => $listing->id,
+                    'reference' => 'STR-TEST01', 'address_line_1' => '12 King Street',
+                    'city' => 'Manchester', 'postcode' => 'M1 1AA',
+                    'price' => 255000, 'bedrooms' => 2, 'bathrooms' => 1,
+                    'property_type' => 'semi_detached', 'property_type_label' => 'Semi-detached',
+                    'status' => 'live', 'listed_at' => now()->subDay()->toIso8601String(),
+                    'branch' => ['id' => $branch->id, 'name' => 'Central', 'region' => 'North West'],
+                ])
             );
+    }
+
+    public function test_show_handles_a_live_listing_without_a_listing_date(): void
+    {
+        $listing = Listing::factory()->live()->create(['listed_at' => null]);
+
+        $this->get("/listings/{$listing->id}")->assertOk()
+            ->assertInertia(fn (AssertableInertia $page) => $page
+                ->component('Listings/Show')->where('listing.listed_at', null));
     }
 
     /**

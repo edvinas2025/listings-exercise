@@ -88,21 +88,25 @@ const fieldClasses =
             />
         </div>
 
-        <button
-            type="submit"
-            :disabled="processing"
-            class="rounded-lg bg-slate-900 px-5 py-2 text-sm font-medium text-white transition hover:bg-slate-700 disabled:opacity-50"
-        >
-            Search
-        </button>
+        <div class="flex items-center gap-3">
+            <button
+                type="submit"
+                :disabled="processing"
+                class="rounded-lg bg-slate-900 px-5 py-2 text-sm font-medium text-white transition hover:bg-slate-700 disabled:opacity-50"
+            >
+                Search
+            </button>
 
-        <button
-            v-if="hasFilters"
-            type="button"
-            class="rounded-lg px-3 py-2 text-sm text-slate-500 underline-offset-2 hover:underline"
-            @click="emit('reset')"
-        >
-            Clear
-        </button>
+            <slot name="actions" />
+
+            <button
+                v-if="hasFilters"
+                type="button"
+                class="rounded-lg px-3 py-2 text-sm text-slate-500 underline-offset-2 hover:underline"
+                @click="emit('reset')"
+            >
+                Clear
+            </button>
+        </div>
     </form>
 </template>
