@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\ListingStatus;
+use App\Enums\PropertyType;
 use App\Models\Listing;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -26,9 +27,10 @@ class ListingTest extends TestCase
 
     public function test_property_type_and_status_are_cast_to_enums(): void
     {
-        $listing = Listing::factory()->live()->create();
+        $listing = Listing::factory()->live()->create(['property_type' => 'semi_detached'])->refresh();
 
         $this->assertInstanceOf(ListingStatus::class, $listing->status);
         $this->assertSame(ListingStatus::Live, $listing->status);
+        $this->assertSame(PropertyType::SemiDetached, $listing->property_type);
     }
 }
