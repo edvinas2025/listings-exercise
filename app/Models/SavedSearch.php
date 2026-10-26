@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Enums\PropertyType;
 use Database\Factories\SavedSearchFactory;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -45,5 +46,25 @@ class SavedSearch extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Null criteria are unrestricted. Every supplied criterion must match.
+     *
+     * @param  Builder<SavedSearch>  $query
+     */
+    public function scopeMatchingListing(Builder $query, Listing $listing): void
+    {
+        $region = $listing->branch()->value('region');
+
+        $query
+            ->where(fn (Builder $query) => $query
+                ->whereNull('max_price')->orWhere('max_price', '>=', $listing->price))
+            ->where(fn (Builder $query) => $query
+                ->whereNull('min_bedrooms')->orWhere('min_bedrooms', '<=', $listing->bedrooms))
+            ->where(fn (Builder $query) => $query
+                ->whereNull('property_type')->orWhere('property_type', $listing->property_type))
+            ->where(fn (Builder $query) => $query
+                ->whereNull('region')->orWhere('region', $region));
     }
 }
